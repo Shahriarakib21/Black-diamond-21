@@ -1,1 +1,70 @@
+-- Create a database for Online Quiz Platform
+CREATE DATABASE OnlineQuizPlatform;
 
+-- Use the database
+USE OnlineQuizPlatform;
+
+-- Create a table for users
+CREATE TABLE Users (
+    UserID INT PRIMARY KEY AUTO_INCREMENT,
+    Username VARCHAR(50) UNIQUE,
+    Email VARCHAR(100) UNIQUE,
+    Password VARCHAR(255),
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create a table for quizzes
+CREATE TABLE Quizzes (
+    QuizID INT PRIMARY KEY AUTO_INCREMENT,
+    Title VARCHAR(100),
+    Description TEXT,
+    Duration INT COMMENT 'Duration in minutes',
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create a table for questions
+CREATE TABLE Questions (
+    QuestionID INT PRIMARY KEY AUTO_INCREMENT,
+    QuizID INT,
+    QuestionText TEXT,
+    QuestionType ENUM('Multiple Choice', 'True/False', 'Short Answer'),
+    FOREIGN KEY (QuizID) REFERENCES Quizzes(QuizID)
+);
+
+-- Create a table for options (for multiple-choice questions)
+CREATE TABLE Options (
+    OptionID INT PRIMARY KEY AUTO_INCREMENT,
+    QuestionID INT,
+    OptionText VARCHAR(255),
+    IsCorrect BOOLEAN,
+    FOREIGN KEY (QuestionID) REFERENCES Questions(QuestionID)
+);
+
+-- Create a table for quiz attempts
+CREATE TABLE Attempts (
+    AttemptID INT PRIMARY KEY AUTO_INCREMENT,
+    UserID INT,
+    QuizID INT,
+    Score FLOAT,
+    StartTime DATETIME,
+    EndTime DATETIME,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID),
+    FOREIGN KEY (QuizID) REFERENCES Quizzes(QuizID)
+);
+
+-- Create a table for answers
+CREATE TABLE Answers (
+    AnswerID INT PRIMARY KEY AUTO_INCREMENT,
+    AttemptID INT,
+    QuestionID INT,
+    SelectedOptionID INT,
+    FOREIGN KEY (AttemptID) REFERENCES Attempts(AttemptID),
+    FOREIGN KEY (QuestionID) REFERENCES Questions(QuestionID),
+    FOREIGN KEY (SelectedOptionID) REFERENCES Options(OptionID)
+);
+
+-- Sample data insertion (optional)
+-- Insert sample users
+INSERT INTO Users (Username, Email, Password) VALUES
+('quizmaster', 'quizmaster@example.com', 'hashedpassword123'),
+('learner1', 'learner1@example.com', 'hashedpassword456');
