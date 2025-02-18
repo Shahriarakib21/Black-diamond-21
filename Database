@@ -1,32 +1,82 @@
--- Create a database for the Online Quiz Platform
+-- Create a database for Online Quiz Platform
 CREATE DATABASE OnlineQuizPlatform;
 
 -- Use the database
 USE OnlineQuizPlatform;
 
--- Create a table for users
-CREATE TABLE Users (
-    UserID INT PRIMARY KEY AUTO_INCREMENT,
-    Username VARCHAR(50) UNIQUE,
-    Email VARCHAR(100) UNIQUE,
-    Password VARCHAR(255),
-    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- Create a table for students
+CREATE TABLE Students (
+    StudentID INT PRIMARY KEY AUTO_INCREMENT,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    Email VARCHAR(100),
+    DateOfBirth DATE
+);
+
+-- Create a table for teachers
+CREATE TABLE Teachers (
+    TeacherID INT PRIMARY KEY AUTO_INCREMENT,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    Email VARCHAR(100)
+);
+
+-- Create a table for courses
+CREATE TABLE Courses (
+    CourseID INT PRIMARY KEY AUTO_INCREMENT,
+    CourseName VARCHAR(100),
+    Credits INT,
+    TeacherID INT,
+    FOREIGN KEY (TeacherID) REFERENCES Teachers(TeacherID)
+);
+
+-- Create a table for enrollments
+CREATE TABLE Enrollments (
+    EnrollmentID INT PRIMARY KEY AUTO_INCREMENT,
+    StudentID INT,
+    CourseID INT,
+    EnrollmentDate DATE,
+    FOREIGN KEY (StudentID) REFERENCES Students(StudentID),
+    FOREIGN KEY (CourseID) REFERENCES Courses(CourseID)
+);
+
+-- Create a table for attendance
+CREATE TABLE Attendance (
+    AttendanceID INT PRIMARY KEY AUTO_INCREMENT,
+    StudentID INT,
+    CourseID INT,
+    AttendanceDate DATE,
+    Status ENUM('Present', 'Absent'),
+    FOREIGN KEY (StudentID) REFERENCES Students(StudentID),
+    FOREIGN KEY (CourseID) REFERENCES Courses(CourseID)
 );
 
 -- Create a table for quizzes
 CREATE TABLE Quizzes (
     QuizID INT PRIMARY KEY AUTO_INCREMENT,
-    QuizName VARCHAR(100),
-    Category VARCHAR(50),
+    CourseID INT,
+    QuizTitle VARCHAR(100),
+    QuizDate DATE,
     DurationMinutes INT,
-    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    FOREIGN KEY (CourseID) REFERENCES Courses(CourseID)
+);
+
+-- Create a table for quiz attempts
+CREATE TABLE QuizAttempts (
+    AttemptID INT PRIMARY KEY AUTO_INCREMENT,
+    QuizID INT,
+    StudentID INT,
+    AttemptDate DATETIME,
+    Score INT,
+    FOREIGN KEY (QuizID) REFERENCES Quizzes(QuizID),
+    FOREIGN KEY (StudentID) REFERENCES Students(StudentID)
 );
 
 -- Create a table for questions
 CREATE TABLE Questions (
     QuestionID INT PRIMARY KEY AUTO_INCREMENT,
     QuizID INT,
-    QuestionText TEXT,
+    QuestionText VARCHAR(255),
     FOREIGN KEY (QuizID) REFERENCES Quizzes(QuizID)
 );
 
@@ -39,47 +89,13 @@ CREATE TABLE Options (
     FOREIGN KEY (QuestionID) REFERENCES Questions(QuestionID)
 );
 
--- Create a table for user quiz attempts
-CREATE TABLE Attempts (
-    AttemptID INT PRIMARY KEY AUTO_INCREMENT,
-    UserID INT,
-    QuizID INT,
-    Score INT,
-    AttemptedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    TimeTaken INT,
-    FOREIGN KEY (UserID) REFERENCES Users(UserID),
-    FOREIGN KEY (QuizID) REFERENCES Quizzes(QuizID)
+-- Create a table for student responses
+CREATE TABLE StudentResponses (
+    ResponseID INT PRIMARY KEY AUTO_INCREMENT,
+    AttemptID INT,
+    QuestionID INT,
+    SelectedOptionID INT,
+    FOREIGN KEY (AttemptID) REFERENCES QuizAttempts(AttemptID),
+    FOREIGN KEY (QuestionID) REFERENCES Questions(QuestionID),
+    FOREIGN KEY (SelectedOptionID) REFERENCES Options(OptionID)
 );
-
--- Add sample data to Users
-INSERT INTO Users (Username, Email, Password) VALUES
-('alice123', 'alice@example.com', 'password123'),
-('bob456', 'bob@example.com', 'securepass'),
-('carol789', 'carol@example.com', 'pass12345');
-
--- Add sample data to Quizzes
-INSERT INTO Quizzes (QuizName, Category, DurationMinutes) VALUES
-('SQL Basics', 'Database', 30),
-('HTML & CSS', 'Web Development', 25),
-('Python Programming', 'Programming', 40);
-
--- Add sample data to Questions
-INSERT INTO Questions (QuizID, QuestionText) VALUES
-(1, 'What is the primary key in SQL?'),
-(1, 'Which SQL statement is used to update data?'),
-(2, 'What does CSS stand for?');
-
--- Add sample data to Options
-INSERT INTO Options (QuestionID, OptionText, IsCorrect) VALUES
-(1, 'A unique identifier for a record', TRUE),
-(1, 'A type of database', FALSE),
-(2, 'UPDATE', TRUE),
-(2, 'DELETE', FALSE),
-(3, 'Cascading Style Sheets', TRUE),
-(3, 'Creative Style Sheets', FALSE);
-
--- Add sample data to Attempts
-INSERT INTO Attempts (UserID, QuizID, Score, TimeTaken) VALUES
-(1, 1, 85, 25),
-(2, 2, 78, 20),
-(3, 3, 90, 35);
