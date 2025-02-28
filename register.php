@@ -1,24 +1,17 @@
 <?php
-header("Content-Type: application/json");
-$input = json_decode(file_get_contents("php://input"), true);
+include 'config.php';
+header('Content-Type: application/json');
 
-$conn = new mysqli("db", "root", "password", "auth_db");
+$data = json_decode(file_get_contents("php://input"), true);
+$firstName = $data['firstName'];
+$lastName = $data['lastName'];
+$username = $data['username'];
+$password = password_hash($data['password'], PASSWORD_DEFAULT);
 
-if ($conn->connect_error) {
-    die(json_encode(["status" => "error", "message" => "Database connection failed"]));
-}
-
-$firstName = $input["firstName"];
-$lastName = $input["lastName"];
-$username = $input["username"];
-$password = password_hash($input["password"], PASSWORD_BCRYPT);
-
-$stmt = $conn->prepare("INSERT INTO users (first_name, last_name, username, password) VALUES (?, ?, ?, ?)");
-$stmt->bind_param("ssss", $firstName, $lastName, $username, $password);
-
-if ($stmt->execute()) {
-    echo json_encode(["status" => "success", "message" => "Registration successful"]);
+$stmt = $pdo->prepare("INSERT INTO users (first_name, last_name, username, password) VALUES (?, ?, ?, ?)");
+if ($stmt->execute([$firstName, $lastName, $username, $password])) {
+    echo json_encode(["status" => "success", "message" => "Registration successful!"]);
 } else {
-    echo json_encode(["status" => "error", "message" => "Registration failed"]);
+    echo json_encode(["status" => "error", "message" => "Registration failed."]);
 }
 ?>
