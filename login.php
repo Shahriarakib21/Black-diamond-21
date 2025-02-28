@@ -1,37 +1,24 @@
 <?php
-session_start();
 header("Content-Type: application/json");
-require 'maindatabase.php';
+$input = json_decode(file_get_contents("php://input"), true);
 
-$data = json_decode(file_get_contents("php://input"), true);
+$conn = new mysqli("db", "root", "password", "auth_db");
 
-if (isset($data['username'], $data['password'])) {
-    $username = $data['username'];
-    $password = $data['password'];
-
-    // Check user
-    $stmt = $conn->prepare("SELECT id, password FROM users WHERE username = ?");
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    $stmt->store_result();
-    $stmt->bind_result($user_id, $hashed_password);
-
-    if ($stmt->num_rows > 0) {
-        $stmt->fetch();
-        if (password_verify($password, $hashed_password)) {
-            $_SESSION['user_id'] = $user_id;
-            echo json_encode(["status" => "success", "message" => "Login successful!"]);
-        } else {
-            echo json_encode(["status" => "error", "message" => "Invalid credentials!"]);
-        }
-    } else {
-        echo json_encode(["status" => "error", "message" => "User not found!"]);
-    }
-
-    $stmt->close();
-} else {
-    echo json_encode(["status" => "error", "message" => "Invalid request!"]);
+if ($conn->connect_error) {
+    die(json_encode(["status" => "error", "message" => "Database connection failed"]));
 }
 
-$conn->close();
+$username = $input["username"];
+$password = $input["password"];
+
+$stmt = $conn->prepare("SELECT password FROM users WHERE username=?");
+$stmt->bind_param("s", $username);
+$stmt->execute();
+$result = $stmt->get_result()->fetch_assoc();
+
+if ($result && password_verify($password, $result["password"])) {
+    echo json_encode(["status" => "success", "message" => "Login successful"]);
+} else {
+    echo json_encode(["status" => "error", "message" => "Invalid credentials"]);
+}
 ?>
