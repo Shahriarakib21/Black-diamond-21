@@ -1,14 +1,14 @@
 <?php
-$host = 'db'; 
-$dbname = 'login_db';
-$username = 'user';
-$password = 'password';
+$servername = "mysql"; // Change to "mysql" if using Docker
+$username = "root";
+$password = ""; // Use your MySQL root password
+$dbname = "quiz_db";
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-    ]);
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
 ?>

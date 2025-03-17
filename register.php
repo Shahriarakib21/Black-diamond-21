@@ -1,17 +1,26 @@
 <?php
-include 'config.php';
-header('Content-Type: application/json');
+require 'db.php';  // Ensure this file is properly connected to your database
 
 $data = json_decode(file_get_contents("php://input"), true);
-$firstName = $data['firstName'];
-$lastName = $data['lastName'];
-$username = $data['username'];
-$password = password_hash($data['password'], PASSWORD_DEFAULT);
+if ($_SERVER["REQUEST_METHOD"]  === "POST")
+{$username = $data['username'];
+    $email = $data['email'];
+    $password = password_hash($data['password'], PASSWORD_BCRYPT);
+    $sql = "INSERT INTO users (username, email, password) VALUES ('$username','$email', '$password' )";
+    $result = $conn->query($sql);
+} // Hash password for security
 
-$stmt = $pdo->prepare("INSERT INTO users (first_name, last_name, username, password) VALUES (?, ?, ?, ?)");
-if ($stmt->execute([$firstName, $lastName, $username, $password])) {
-    echo json_encode(["status" => "success", "message" => "Registration successful!"]);
+
+
+// $sql = "INSERT INTO users (username, email, password) VALUES (:username, :email, :password)";
+$stmt = $pdo->prepare($sql);
+$stmt->bindParam(':username', $username);
+$stmt->bindParam(':email', $email);
+$stmt->bindParam(':password', $password);
+
+if ($stmt->execute()) {
+    echo json_encode(["success" => true, "message" => "Registration successful!"]);
 } else {
-    echo json_encode(["status" => "error", "message" => "Registration failed."]);
+    echo json_encode(["success" => false, "message" => "Registration failed. Please try again."]);
 }
 ?>
